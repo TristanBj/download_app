@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 
@@ -191,6 +193,82 @@ public class JSONReader {
 		    }
 		  }
 	  
+	  public void getTeamProperties(String url, Championship champ, String DB_PATH, Statement stmt) throws IOException, JSONException, SQLException {
+		    
+		    
+		    try {
+		    	
+		      // League Config file 	
+		      //BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+		      BufferedReader rd = new BufferedReader(new FileReader(DB_PATH + "teams_ligue1_id.json"));
+		      String jsonText = readAll(rd);
+		      
+		      JSONObject json1 = new JSONObject();
+		      JSONArray jsonArr = new JSONArray(jsonText);
+		      ArrayList<Team> teamList = new ArrayList<Team>();
+		      
+		      // Team Config file 	
+		      //BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+		      BufferedReader rd2 = new BufferedReader(new FileReader(DB_PATH + "teams_ligue1.json"));
+		      String jsonText2 = readAll(rd2);
+		      //JSONObject json = new JSONObject(jsonText);
+		      JSONObject json2 = new JSONObject(jsonText2);
+		      JSONArray jsonArr2 = json2.getJSONArray("teams");
+		      
+		      
+		   
+		      for (int i = 0; i < jsonArr.length(); ++i) {
+		    	   
+		    	    JSONObject rec = jsonArr.getJSONObject(i);
+		    	    //int id = rec.getInt("id");
+		    	    String name = rec.getString("name");
+	
+		    	    
+		    	    Team team = new Team();
+		    	    team.setName(name);
+		    	    team.setId(rec.getInt("id"));
+		    	    teamList.add(team);
+		    	    
+
+		    	    
+		    	    	
+		    	    
+		    	    for(int y=0; y < jsonArr2.length(); y++){
+		    	    	
+		    	    	JSONObject rec2 = jsonArr2.getJSONObject(y);
+		    	    	String teamName = rec2.getString("name");
+		    	    	
+		    	    	if(rec2.getString("squadMarketValue")!=null){
+			    	    	String teamValue = rec2.getString("squadMarketValue");	
+			    	    	
+				    	    	if(teamName.equals(name)){
+				    	    		
+				    	    		System.out.println("Team Found!!");
+				    	    		String sql = "INSERT INTO Team (teamID,Name,SquadMarketValue) VALUES ("+rec.getInt("id")+",'"+rec.getString("name")+"','"+teamValue+"');";
+								    stmt.executeUpdate(sql);
+				    	    		
+				    	    	}
+			    	    	}else{
+			    	    		String sql = "INSERT INTO Team (teamID,Name) VALUES ("+rec.getInt("id")+",'"+rec.getString("name")+"');";
+			 					stmt.executeUpdate(sql);
+			    	    	}
+		    	    }
+		    	    
+		    	    //team.setId(id);
+		    	    //System.out.println(name + " id:" + team.getId()  + " Team value:" + teamValue );
+		    	    
+		    	   	
+		    	    	
+		    	    		    	    
+		    	}
+		    	
+		      champ.setTeamList(teamList);
+		      
+		    } finally {
+		    	System.out.println("---------- END OF TEAM PROPERTIES ----------");
+		    }
+		  }
+	  
 	  public void getTeamFixture(Championship champ, String DB_PATH) throws IOException, JSONException {
 		    
 		    //String URL = "http://api.football-data.org/alpha/teams/"+team.getId()+"/fixtures";
@@ -249,4 +327,31 @@ public class JSONReader {
 		  System.out.println(ch_ret.toString());
 		  return ch_ret;
 	  }
+
+	public void readLeagueDefinition(Championship champ, String string, String DB_PATH, Statement stmt) throws IOException, JSONException{
+		// TODO Auto-generated method stub
+		try {
+		      //BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+		      BufferedReader rd = new BufferedReader(new FileReader(DB_PATH + "alpha_ligue1_definition.json"));
+		      String jsonText = readAll(rd);
+		      JSONObject json = new JSONObject(jsonText);
+		      JSONObject jsonO = new JSONObject();
+		      jsonO = json.getJSONObject("_links");
+		      JSONObject teamLink = jsonO.getJSONObject("teams");
+		      champ.setTeamsLink(teamLink.getString("href"));
+		      System.out.println(teamLink.getString("href"));
+		      JSONObject fixtureLink = jsonO.getJSONObject("fixtures");
+		      champ.setFixturesLink(fixtureLink.getString("href"));
+		      System.out.println(fixtureLink.getString("href"));
+		      JSONObject leaguetableLink = jsonO.getJSONObject("leagueTable");
+		      champ.setLeaguetableLink(leaguetableLink.getString("href"));
+		      System.out.println(leaguetableLink.getString("href"));
+
+		      
+		      
+		      
+		    } finally {
+		    	System.out.println("---------- END OF LEAGUE DEFINITION ----------");
+		    }
+	}
 }
