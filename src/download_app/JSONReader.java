@@ -1,4 +1,4 @@
-package download_app;
+
 
 
 import java.awt.peer.LightweightPeer;
@@ -68,6 +68,7 @@ public class JSONReader {
 	      return champ;
 	    } finally {
 	      is.close();
+	      System.out.println("---------- END OF READ JSON FILE ----------");
 	    }
 	  }
 	  
@@ -84,16 +85,16 @@ public class JSONReader {
 		      champ.setTeamsLink(teamLink.getString("href"));
 		      System.out.println(teamLink.getString("href"));
 		      JSONObject fixtureLink = jsonO.getJSONObject("fixtures");
-		      champ.setTeamsLink(fixtureLink.getString("href"));
+		      champ.setFixturesLink(fixtureLink.getString("href"));
 		      System.out.println(fixtureLink.getString("href"));
 		      JSONObject leaguetableLink = jsonO.getJSONObject("leagueTable");
-		      champ.setTeamsLink(leaguetableLink.getString("href"));
+		      champ.setLeaguetableLink(leaguetableLink.getString("href"));
 		      System.out.println(leaguetableLink.getString("href"));
 
 		      
 		      
 		    } finally {
-		      
+		    	System.out.println("---------- END OF LEAGUE DEFINITION ----------");
 		    }
 		  }
 	  
@@ -125,6 +126,7 @@ public class JSONReader {
 		      return champ;
 		    } finally {
 		      is.close();
+		      System.out.println("---------- END OF GET TEAM  ----------");
 		    }
 		  }
 	  
@@ -185,7 +187,7 @@ public class JSONReader {
 		      champ.setTeamList(teamList);
 		      
 		    } finally {
-		      
+		    	System.out.println("---------- END OF TEAM PROPERTIES ----------");
 		    }
 		  }
 	  
@@ -233,7 +235,7 @@ public class JSONReader {
 		      
 		    }
 		    } finally {
-		      
+		    	System.out.println("---------- END OF TEAM FIXTURES ----------");
 		    }
 		    
 		   
