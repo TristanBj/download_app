@@ -198,14 +198,10 @@ public class JSONReader {
 		    
 		    try {
 		    	
-		      // League Config file 	
-		      //BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-		      BufferedReader rd = new BufferedReader(new FileReader(DB_PATH + "teams_ligue1_id.json"));
-		      String jsonText = readAll(rd);
-		      
-		      JSONObject json1 = new JSONObject();
-		      JSONArray jsonArr = new JSONArray(jsonText);
+		    	
+
 		      ArrayList<Team> teamList = new ArrayList<Team>();
+		      
 		      
 		      // Team Config file 	
 		      //BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
@@ -216,42 +212,45 @@ public class JSONReader {
 		      JSONArray jsonArr2 = json2.getJSONArray("teams");
 		      
 		      
-		   
-		      for (int i = 0; i < jsonArr.length(); ++i) {
-		    	   
-		    	    JSONObject rec = jsonArr.getJSONObject(i);
-		    	    //int id = rec.getInt("id");
-		    	    String name = rec.getString("name");
+
 	
 		    	    
-		    	    Team team = new Team();
-		    	    team.setName(name);
-		    	    team.setId(rec.getInt("id"));
-		    	    teamList.add(team);
 		    	    
-
+		    	    //team.setId(rec.getInt("id"));
 		    	    
-		    	    	
+	    	
 		    	    
+		    	    	    
 		    	    for(int y=0; y < jsonArr2.length(); y++){
 		    	    	
 		    	    	JSONObject rec2 = jsonArr2.getJSONObject(y);
 		    	    	String teamName = rec2.getString("name");
 		    	    	
+		    	    	JSONObject links_ = rec2.getJSONObject("_links");
+		    	    	JSONObject self = links_.getJSONObject("self");
+		    	    	String href = self.getString("href");
+		    	    	System.out.println("reference : " + href);
+		    	    	
+		    	    	int teamID = getTeamID(href);
+		    	    	
+		    	    	
+		    	    	Team team = new Team();
+			    	    team.setName(teamName);
+		    	    	team.setId(teamID);
+			    	    
 		    	    	if(rec2.getString("squadMarketValue")!=null){
 			    	    	String teamValue = rec2.getString("squadMarketValue");	
 			    	    	
-				    	    	if(teamName.equals(name)){
-				    	    		
 				    	    		System.out.println("Team Found!!");
-				    	    		String sql = "INSERT INTO Team (teamID,Name,SquadMarketValue) VALUES ("+rec.getInt("id")+",'"+rec.getString("name")+"','"+teamValue+"');";
+				    	    		String sql = "INSERT INTO Team (teamID,Name,SquadMarketValue) VALUES ("+teamID+",'"+rec2.getString("name")+"','"+teamValue+"');";
 								    stmt.executeUpdate(sql);
 				    	    		
-				    	    	}
+				    	    	
 			    	    	}else{
-			    	    		String sql = "INSERT INTO Team (teamID,Name) VALUES ("+rec.getInt("id")+",'"+rec.getString("name")+"');";
+			    	    		String sql = "INSERT INTO Team (teamID,Name) VALUES ("+teamID+",'"+rec2.getString("name")+"');";
 			 					stmt.executeUpdate(sql);
 			    	    	}
+		    	    	teamList.add(team);
 		    	    }
 		    	    
 		    	    //team.setId(id);
@@ -260,7 +259,7 @@ public class JSONReader {
 		    	   	
 		    	    	
 		    	    		    	    
-		    	}
+		    	
 		    	
 		      champ.setTeamList(teamList);
 		      
@@ -326,6 +325,14 @@ public class JSONReader {
 		  Championship ch_ret = readJsonFromFile("http://www.football-data.org/soccerseasons/"+ChampionshipID+"/teams", champ, DB_PATH);
 		  System.out.println(ch_ret.toString());
 		  return ch_ret;
+	  }
+	  
+	  private int getTeamID(String href) {
+		  
+		  String[] array = href.split("/", -1);
+		  System.out.println( array[array.length -1]);
+		  
+		  return Integer.parseInt(array[array.length -1]);
 	  }
 
 	public void readLeagueDefinition(Championship champ, String string, String DB_PATH, Statement stmt) throws IOException, JSONException{

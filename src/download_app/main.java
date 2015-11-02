@@ -27,9 +27,11 @@ public class main {
 	private static Championship Ligue1 = new Championship();
 	private static String DB_Path = "/home/tristan/Documents/Project/DB/";
 	
+	
 	// MySQL config and PATH
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";  
 	static final String DB_URL = "jdbc:mysql://localhost/";
+	//static final String DB_URL = "jdbc:mysql://92.161.255.237:3306";
 	static final String USER = "tristan";
 	static final String PASS = "root";
 	static Connection conn = null;
@@ -41,7 +43,7 @@ public class main {
 	    try{
 	        Class.forName(JDBC_DRIVER); //Register JDBC Driver
 
-	        System.out.println("Creating a connection...");
+	        System.out.println("Creating a connection with SQL server on address : " + DB_URL + "   USER: "+ USER + "   PASS: " + PASS);
 	        conn = DriverManager.getConnection(DB_URL, USER, PASS); //Open a connection
 
 	        ResultSet resultSet = conn.getMetaData().getCatalogs();
@@ -117,10 +119,10 @@ public class main {
 		
 		try {
 			
-			//saveUrlWithHeader( DB_Path+ "teams_ligue1_id.json", "http://api.football-data.org/soccerseasons/396/teams");
-			//saveUrlWithHeader( DB_Path+ "teams_ligue1.json", "http://www.football-data.org/alpha/soccerseasons/396/teams");
-			//saveUrlWithHeader( DB_Path+ "alpha_ligue1_definition.json", "http://api.football-data.org/alpha/soccerseasons/396");
-			//saveUrlWithHeader( DB_Path+ "alpha_ligue1_fixtures.json", "http://api.football-data.org/alpha/soccerseasons/396/fixtures");
+			saveUrlWithHeader( DB_Path+ "teams_ligue1_id.json", "http://api.football-data.org/soccerseasons/396/teams");
+			saveUrlWithHeader( DB_Path+ "teams_ligue1.json", "http://www.football-data.org/alpha/soccerseasons/396/teams");
+			saveUrlWithHeader( DB_Path+ "alpha_ligue1_definition.json", "http://api.football-data.org/alpha/soccerseasons/396");
+			saveUrlWithHeader( DB_Path+ "alpha_ligue1_fixtures.json", "http://api.football-data.org/alpha/soccerseasons/396/fixtures");
 			
 			JSON.readLeagueDefinition(Ligue1, "", DB_Path, stmt);
 			JSON.getTeamProperties("", Ligue1, DB_Path, stmt);
@@ -128,12 +130,12 @@ public class main {
 			
 			for(int i=0;i<Ligue1.getTeamList().size();i++){
 				//System.out.println(Ligue1.getTeamList().get(i).getName());
-				//saveUrlWithHeader(DB_Path + "fixtures_ligue1_"+ Ligue1.getTeamList().get(i).getId() +".json", "http://api.football-data.org/alpha/teams/"+ Ligue1.getTeamList().get(i).getId() +"/fixtures");
+				saveUrlWithHeader(DB_Path + "fixtures_ligue1_"+ Ligue1.getTeamList().get(i).getId() +".json", "http://api.football-data.org/alpha/teams/"+ Ligue1.getTeamList().get(i).getId() +"/fixtures");
 				
 			}
-			JSON.getTeamFixture(Ligue1, DB_Path);
+			//JSON.getTeamFixture(Ligue1, DB_Path);
 			System.out.println(Ligue1.getLeaguetableLink());
-			//saveUrlWithHeader(DB_Path + "leagueTable_ligue1.json", Ligue1.getLeaguetableLink());
+			saveUrlWithHeader(DB_Path + "leagueTable_ligue1.json", Ligue1.getLeaguetableLink());
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
