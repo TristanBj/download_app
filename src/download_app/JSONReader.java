@@ -169,7 +169,9 @@ public class JSONReader {
 		    	    
 		    	    if(!rec.isNull("squadMarketValue")){
 		    	    	
-		    	    String teamValue = rec.getString("squadMarketValue");	
+		    	    String teamValue = rec.getString("squadMarketValue");
+		    	    
+		    	    
 		    	    for(int ii =0; ii< champ.getTeamList().size(); ii++){
 		    	    	
 		    	    	if(champ.getTeamList().get(ii).getName().equals(name)){
@@ -241,8 +243,9 @@ public class JSONReader {
 		    	    	if(rec2.getString("squadMarketValue")!=null){
 			    	    	String teamValue = rec2.getString("squadMarketValue");	
 			    	    	
+			    	    			int int_teamValue = getValuefromString(teamValue);
 				    	    		System.out.println("Team Found!!");
-				    	    		String sql = "INSERT INTO Team (teamID,Name,SquadMarketValue) VALUES ("+teamID+",'"+rec2.getString("name")+"','"+teamValue+"');";
+				    	    		String sql = "INSERT INTO Team (teamID,Name,SquadMarketValue) VALUES ("+teamID+",'"+rec2.getString("name")+"','"+int_teamValue+"');";
 								    stmt.executeUpdate(sql);
 				    	    		
 				    	    	
@@ -318,7 +321,62 @@ public class JSONReader {
 		   
 		  }
 		    
+	  public void getLeagueFixtures(Championship champ, String DB_PATH, Statement stmt) throws IOException, JSONException, SQLException {
 		    
+		    //String URL = "http://api.football-data.org/alpha/teams/"+team.getId()+"/fixtures";
+		    //InputStream is = new URL(URL).openStream();
+		    
+		    try {
+		    	
+		      //BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+		    	
+		    
+		    	
+		      BufferedReader rd = new BufferedReader(new FileReader(DB_PATH + "alpha_ligue1_fixtures.json"));
+		      
+		      String jsonText = readAll(rd);
+		      JSONObject json = new JSONObject(jsonText);
+		      JSONObject json2 = new JSONObject();
+		      JSONArray jsonArr = new JSONArray();
+		      ArrayList<Team> teamList = new ArrayList<Team>();
+		      
+		      jsonArr = json.getJSONArray("fixtures");
+		      //System.out.println(jsonArr.toString());
+		      
+		      
+		      for (int i = 0; i < jsonArr.length(); ++i) {
+		    	    JSONObject rec = jsonArr.getJSONObject(i);
+		    	    //int id = rec.getInt("id");
+		    	    JSONObject rec2 = rec.getJSONObject("_links");
+		    	    JSONObject rec3 = rec2.getJSONObject("self");
+		    	    String fixtureIDLink = rec3.getString("href");
+		    	    JSONObject homeTeamNameOBJ = rec2.getJSONObject("homeTeam");
+		    	    JSONObject awayTeamNameOBJ = rec2.getJSONObject("awayTeam");
+		    	    String homeTeamName = homeTeamNameOBJ.getString("href");
+		    	    String awayTeamName = awayTeamNameOBJ.getString("href");
+		    	    
+		    	    String status = rec.getString("status");
+		    	    int matchday = rec.getInt("matchday");
+		    	    JSONObject result = rec.getJSONObject("result");
+		    	    
+		    	    int homeTeamResult = result.getInt("goalsHomeTeam");
+		    	    int awayTeamResult = result.getInt("goalsAwayTeam");
+		    	    
+		    	    String sql = "INSERT INTO Fixtures (fixtureID,homeTeamId,awayTeamId,homeTeamScore,awayTeamScore, matchDay, status) VALUES ("+getTeamID(fixtureIDLink)+",'"+getTeamID(homeTeamName)+"','"+getTeamID(awayTeamName)+"','"+homeTeamResult+"','"+awayTeamResult+"','"+matchday+"','"+status+"');";
+				    stmt.executeUpdate(sql);
+		    	    System.out.println(homeTeamName + " Vs. "  + awayTeamName + "   " + homeTeamResult + ":" + awayTeamResult);
+		    	    
+		    	    
+		    	}
+		    	
+		      
+		    
+		    } finally {
+		    	System.out.println("---------- END OF TEAM FIXTURES ----------");
+		    }
+		    
+		   
+		  }
 	  
 	  public Championship doparse(Championship champ, String ChampionshipID, String DB_PATH) throws IOException, JSONException{
 		  
@@ -330,10 +388,51 @@ public class JSONReader {
 	  private int getTeamID(String href) {
 		  
 		  String[] array = href.split("/", -1);
+		  System.out.println( "Team ID found :" + array[array.length -1]);
+		  
+		  try{
+		  return Integer.parseInt(array[array.length -1]);
+		  }catch(NumberFormatException e){
+			  e.printStackTrace();
+			  return -1;
+		  }
+	  }
+	  
+	  private int getValuefromString(String href) {
+		  
+		  String[] array = href.split(" ", -1);
 		  System.out.println( array[array.length -1]);
 		  
-		  return Integer.parseInt(array[array.length -1]);
+		  
+		  String[] array2 = array[0].split(",", -1);
+		  
+		  int squadValue = 0;
+		  
+		  for(int i=0; i <= array2.length-1;i++ ){
+			
+			  if(i==array2.length-3){
+				  squadValue = squadValue + ( Integer.parseInt(array2[array2.length-1])* 1);
+				  System.out.println("i==0");
+			  }
+			  if(i==array2.length-2){
+				  squadValue = squadValue + ( Integer.parseInt(array2[array2.length-2])* 1000);
+				  System.out.println("i==0");
+			  }
+			  if(i==array2.length-1){
+				  squadValue = squadValue +(Integer.parseInt(array2[array2.length-3]) * 1000000);
+				  System.out.println("i==0");
+			  }
+			  
+		  System.out.println(" array["+ i +"] "+ array2[i]);
+		  
+		  }
+		  
+		  System.out.println("Squad market value found: " + squadValue);
+		  
+		  
+		  return squadValue;
 	  }
+	  
 
 	public void readLeagueDefinition(Championship champ, String string, String DB_PATH, Statement stmt) throws IOException, JSONException{
 		// TODO Auto-generated method stub
