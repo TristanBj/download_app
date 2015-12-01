@@ -1,7 +1,4 @@
 
-
-
-import java.awt.peer.LightweightPeer;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -199,8 +196,6 @@ public class JSONReader {
 		    
 		    
 		    try {
-		    	
-		    	
 
 		      ArrayList<Team> teamList = new ArrayList<Team>();
 		      
@@ -212,17 +207,7 @@ public class JSONReader {
 		      //JSONObject json = new JSONObject(jsonText);
 		      JSONObject json2 = new JSONObject(jsonText2);
 		      JSONArray jsonArr2 = json2.getJSONArray("teams");
-		      
-		      
 
-	
-		    	    
-		    	    
-		    	    //team.setId(rec.getInt("id"));
-		    	    
-	    	
-		    	    
-		    	    	    
 		    	    for(int y=0; y < jsonArr2.length(); y++){
 		    	    	
 		    	    	JSONObject rec2 = jsonArr2.getJSONObject(y);
@@ -271,6 +256,68 @@ public class JSONReader {
 		    }
 		  }
 	  
+	  public void getTeamData(Championship champ, String DB_PATH, Statement stmt) throws IOException, JSONException, SQLException {
+		    
+		    
+		    try {
+
+		      ArrayList<Team> teamList = new ArrayList<Team>();
+
+		      BufferedReader rd = new BufferedReader(new FileReader(DB_PATH + "leagueTable_ligue1.json"));
+		      String jsonText = readAll(rd);
+
+		      JSONObject json = new JSONObject(jsonText);
+		      JSONArray jsonArr = json.getJSONArray("standing");
+
+		    	    for(int y=0; y < jsonArr.length(); y++){
+		    	    	
+		    	    	JSONObject rec2 = jsonArr.getJSONObject(y);
+		    	    	
+		    	    	JSONObject links_ = rec2.getJSONObject("_links");
+		    	    	JSONObject self = links_.getJSONObject("team");
+		    	    	String href = self.getString("href");
+		    	    	int teamID = getTeamID(href);
+		    	    	
+		    	    	
+		    	    	int playedGames = rec2.getInt("playedGames");
+		    	    	int wins = rec2.getInt("wins");
+		    	    	int draws = rec2.getInt("draws");
+		    	    	int losses = rec2.getInt("losses");
+		    	    	int points = rec2.getInt("points");
+		    	    	int position = rec2.getInt("position");
+		    	    	int goals = rec2.getInt("goals");
+		    	    	int goalsAgainst = rec2.getInt("goalsAgainst");
+		    	    	int goalDifference = rec2.getInt("goalDifference");
+		    	    	
+		    	    	JSONObject home =  rec2.getJSONObject("home");
+		    	    	JSONObject away =  rec2.getJSONObject("away");
+		    	    	
+		    	    	int homeWins = home.getInt("wins");
+		    	    	int homeDraws = home.getInt("draws");
+		    	    	int homeLosses = home.getInt("losses");
+		    	    	int homeGoals = home.getInt("goals");
+		    	    	int homeGoalsAgainst = home.getInt("goalsAgainst");
+		    	    	
+		    	    	int awayWins = away.getInt("wins");
+		    	    	int awayDraws = away.getInt("draws");
+		    	    	int awayLosses = away.getInt("losses");
+		    	    	int awayGoals = away.getInt("goals");
+		    	    	int awayGoalsAgainst = away.getInt("goalsAgainst");
+		    	    	
+		    	    	String sql = "UPDATE Team SET playedGames="+playedGames+", win="+wins+", draw="+draws+", loss="+losses+" , goals="+goals+", goalsAgainst="+goalsAgainst+", goalDifference="+goalDifference+" , points="+points+" , position="+position+", homeWins="+homeWins+", homeDraws="+homeDraws+", homeLosses="+homeLosses+", homeGoals="+homeGoals+", homeAgainstGoals="+homeGoalsAgainst+", awayWins="+awayWins+", awayDraws="+awayDraws+", awayLosses="+awayLosses+", awayGoals="+awayGoals+", awayAgainstGoals="+awayGoalsAgainst+" WHERE teamID="+teamID+";"; 
+		    	    	stmt.executeUpdate(sql);
+		    	    	System.out.println(playedGames); 
+		    	    	
+		    	    }
+	
+
+		      champ.setTeamList(teamList);
+		      
+		    } finally {
+		    	System.out.println("---------- END OF TEAM DATA ----------");
+		    }
+		  }
+	  
 	  public void getTeamFixture(Championship champ, String DB_PATH) throws IOException, JSONException {
 		    
 		    //String URL = "http://api.football-data.org/alpha/teams/"+team.getId()+"/fixtures";
@@ -303,9 +350,15 @@ public class JSONReader {
 		    	    int matchday = rec.getInt("matchday");
 		    	    JSONObject result = rec.getJSONObject("result");
 		    	    
-		    	    int homeTeamResult = result.getInt("goalsHomeTeam");
-		    	    int awayTeamResult = result.getInt("goalsAwayTeam");
+		    	    int homeTeamResult=-1;
+		    	    int awayTeamResult=-1;
 		    	    
+		    	    Object obj= result.get("goalsHomeTeam");
+		    	    
+		    	    if(obj instanceof Integer) {
+		    	    homeTeamResult = result.getInt("goalsHomeTeam");
+		    	    awayTeamResult= result.getInt("goalsAwayTeam");
+		    	    }
 		    	    
 		    	    System.out.println(homeTeamName + " Vs. "  + awayTeamName + "   " + homeTeamResult + ":" + awayTeamResult);
 		    	    
@@ -359,8 +412,15 @@ public class JSONReader {
 		    	    int matchday = rec.getInt("matchday");
 		    	    JSONObject result = rec.getJSONObject("result");
 		    	    
-		    	    int homeTeamResult = result.getInt("goalsHomeTeam");
-		    	    int awayTeamResult = result.getInt("goalsAwayTeam");
+		    	    int homeTeamResult=-1;
+		    	    int awayTeamResult=-1;
+		    	    
+		    	    Object obj= result.get("goalsHomeTeam");
+		    	    
+		    	    if(obj instanceof Integer) {
+		    	    homeTeamResult = result.getInt("goalsHomeTeam");
+		    	    awayTeamResult= result.getInt("goalsAwayTeam");
+		    	    }
 		    	    
 		    	    String sql = "INSERT INTO Fixtures (fixtureID,homeTeamId,awayTeamId,homeTeamScore,awayTeamScore, matchDay, status) VALUES ("+getTeamID(fixtureIDLink)+",'"+getTeamID(homeTeamName)+"','"+getTeamID(awayTeamName)+"','"+homeTeamResult+"','"+awayTeamResult+"','"+matchday+"','"+status+"');";
 				    stmt.executeUpdate(sql);

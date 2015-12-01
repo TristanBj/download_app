@@ -97,7 +97,8 @@ public class Main {
 			      stmt.executeUpdate(sql);
 			      sql = "DROP TABLE IF EXISTS Fixtures";
 			      stmt.executeUpdate(sql);
-			      sql = "CREATE TABLE Team (teamID int(11) NOT NULL, Name varchar(45) NOT NULL, SquadMarketValue int(20) , PRIMARY KEY (teamID)) ENGINE=InnoDB;";
+			      sql = "CREATE TABLE Team (teamID int(11) NOT NULL, Name varchar(45) NOT NULL, SquadMarketValue int(20) , playedGames int(2) , win int(2) , draw int(2) , loss int(2) ,goals int(3) ,goalsAgainst int(3) ,goalDifference int(3), points int(2), position int(2), homeWins int(2)," +
+			      		"homeDraws int(2), homeLosses int(2), homeGoals int(3), homeAgainstGoals int(3), awayWins int(2), awayDraws int(2), awayLosses int(2), awayGoals int(3), awayAgainstGoals int(3), PRIMARY KEY (teamID)) ENGINE=InnoDB;";
 			      stmt.executeUpdate(sql);
 		    	  System.out.println("Create Team Table...");
 		    	  sql = "CREATE TABLE Fixtures (fixtureID int(11) NOT NULL, homeTeamId int(11) NOT NULL , awayTeamId int(11) NOT NULL, homeTeamScore int(5), awayTeamScore int(5) NOT NULL , matchDay int(5) NOT NULL , status varchar(10) NOT NULL , PRIMARY KEY (fixtureID)) ENGINE=InnoDB;";
@@ -124,10 +125,10 @@ public class Main {
 		
 		try {
 			
-			saveUrlWithHeader( DB_Path+ "teams_ligue1_id.json", "http://api.football-data.org/v1/soccerseasons/396/teams");
-			saveUrlWithHeader( DB_Path+ "teams_ligue1.json", "http://www.football-data.org/alpha/soccerseasons/396/teams");
-			saveUrlWithHeader( DB_Path+ "alpha_ligue1_definition.json", "http://api.football-data.org/alpha/soccerseasons/396");
-			saveUrlWithHeader( DB_Path+ "alpha_ligue1_fixtures.json", "http://api.football-data.org/v1/soccerseasons/396/fixtures");
+			//saveUrlWithHeader( DB_Path+ "teams_ligue1_id.json", "http://api.football-data.org/v1/soccerseasons/396/teams");
+			//saveUrlWithHeader( DB_Path+ "teams_ligue1.json", "http://www.football-data.org/alpha/soccerseasons/396/teams");
+			//saveUrlWithHeader( DB_Path+ "alpha_ligue1_definition.json", "http://api.football-data.org/alpha/soccerseasons/396");
+			//saveUrlWithHeader( DB_Path+ "alpha_ligue1_fixtures.json", "http://api.football-data.org/v1/soccerseasons/396/fixtures");
 			
 			JSON.readLeagueDefinition(Ligue1, "", DB_Path, stmt);
 			JSON.getTeamProperties("", Ligue1, DB_Path, stmt);
@@ -135,13 +136,14 @@ public class Main {
 			
 			for(int i=0;i<Ligue1.getTeamList().size();i++){
 				//System.out.println(Ligue1.getTeamList().get(i).getName());
-				saveUrlWithHeader(DB_Path + "fixtures_ligue1_"+ Ligue1.getTeamList().get(i).getId() +".json", "http://api.football-data.org/alpha/teams/"+ Ligue1.getTeamList().get(i).getId() +"/fixtures");
+				//saveUrlWithHeader(DB_Path + "fixtures_ligue1_"+ Ligue1.getTeamList().get(i).getId() +".json", "http://api.football-data.org/alpha/teams/"+ Ligue1.getTeamList().get(i).getId() +"/fixtures");
 				
 			}
 			//JSON.getTeamFixture(Ligue1, DB_Path);
 			JSON.getLeagueFixtures(Ligue1, DB_Path, stmt);
 			System.out.println(Ligue1.getLeaguetableLink());
-			saveUrlWithHeader(DB_Path + "leagueTable_ligue1.json", Ligue1.getLeaguetableLink());
+			//saveUrlWithHeader(DB_Path + "leagueTable_ligue1.json", Ligue1.getLeaguetableLink());
+			JSON.getTeamData(Ligue1 , DB_Path , stmt);
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
